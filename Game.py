@@ -2,23 +2,52 @@ from ple.games.flappybird import FlappyBird
 from ple import PLE
 import numpy as np
 import random
-
-game = FlappyBird()
-p = PLE(game, fps=30, display_screen=True)
-# agent = myAgentHere(allowed_actions=p.getActionSet())
-
-p.init()
-reward = 0.0
+import DDQN_Agent
 
 
-for i in range(100000000):
-    if p.game_over():
-        p.reset_game()
-        print("Game Ended ", reward)
-    observation = game.getGameState()
-    print(observation)
+def train(FRAME_TRAIN=1000000):
+    game = FlappyBird()
+    p = PLE(game, fps=30, display_screen=True)
+    p.init()
+    reward = 0.0
+    ob = game.getGameState()
+    state = ob
+    next_state = ob
+    total_reward = 0
+    agent = DDQN_Agent.DeepQAgent()
+    agent2 = DDQN_Agent.DeepQAgent()
+    batch_size = 32
 
-    # get action from agent
-    if random.random() < 0.1: action = 119
-    else: action = None
-    reward = p.act(action)
+    for i in range(FRAME_TRAIN):
+        coin_toss = random.random > 0.5
+
+        if p.game_over():
+            p.reset_game()
+            print("Total reward = ", total_reward)
+            total_reward = 0
+
+        # get action from agent
+        if coin_toss:
+            action = agent.act(state)
+        else:
+            action = agent2.act(state)
+
+        # take action
+        reward = p.act(p.getActionSet[action])
+        next_state = game.getGameState()
+        total_reward += reward
+
+        # remember and replay
+        if coin_toss:
+            agent.remember(state, action, reward, next_state, p.game_over())
+            if len(agent.memory) > batch_size:
+                agent.replay(batch_size, agent2)
+        else:
+            agent2.remember(state, action, reward, next_state, p.game_over())
+            if len(agent2.memory) > batch_size:
+                agent2.replay(batch_size, agent)
+
+        state = next_state
+
+if __name__ == '__main__':
+    train()
