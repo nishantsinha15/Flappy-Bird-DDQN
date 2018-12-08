@@ -3,28 +3,32 @@ from ple import PLE
 import numpy as np
 import random
 import DDQN_Agent
+import time
 
 
 def train(FRAME_TRAIN=1000000):
     game = FlappyBird()
-    p = PLE(game, fps=30, display_screen=True)
+    p = PLE(game, fps=30, display_screen=False)
     p.init()
-    reward = 0.0
     ob = game.getGameState()
     state = ob
-    next_state = ob
+    state = np.reshape(np.asarray(list(state.values())) , [1, 8])
     total_reward = 0
     agent = DDQN_Agent.DeepQAgent()
     agent2 = DDQN_Agent.DeepQAgent()
     batch_size = 32
-
+    my_timer = time.time()
+    prev_frame = 0
     for i in range(FRAME_TRAIN):
-        coin_toss = random.random > 0.5
+        coin_toss = random.random() > 0.5
 
         if p.game_over():
             p.reset_game()
-            print("Total reward = ", total_reward)
+            print("Total reward = {}, Frame = {}, epsilon = {}, frame/second = {}".format(total_reward, i, agent.epsilon,
+                                                                                          (i - prev_frame)/(time.time() - my_timer)))
             total_reward = 0
+            prev_frame = i
+            my_timer = time.time()
 
         # get action from agent
         if coin_toss:
@@ -33,8 +37,9 @@ def train(FRAME_TRAIN=1000000):
             action = agent2.act(state)
 
         # take action
-        reward = p.act(p.getActionSet[action])
-        next_state = game.getGameState()
+        reward = p.act(p.getActionSet()[action])
+        next_state = np.asarray(list(game.getGameState().values()))
+        next_state = np.reshape(next_state, [1, 8])
         total_reward += reward
 
         # remember and replay
@@ -48,6 +53,11 @@ def train(FRAME_TRAIN=1000000):
                 agent2.replay(batch_size, agent)
 
         state = next_state
+
+        # save Model
+        if i % 10000 == 0:
+            agent.save('model')
+            agent2.save('model2')
 
 if __name__ == '__main__':
     train()
