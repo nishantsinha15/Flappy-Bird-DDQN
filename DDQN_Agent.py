@@ -14,9 +14,10 @@ class DeepQAgent:
         self.gamma = 0.995
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995  # todo learn how to decay epsilon properly
+        self.epsilon_decay = 10 ** ((-1) * (10 ** (-5) ))  # todo learn how to decay epsilon properly
         self.learning_rate = 0.001
         self.model = self._build_model()
+        self.target_model = self._build_model()
 
     def _build_model(self):
         model = Sequential()
@@ -30,15 +31,16 @@ class DeepQAgent:
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        if np.random.rand() <= self.epsilon:
-            return np.random.randint(low=0, high=self.action_size)
-        act_values = self.model.predict(state)[0]
         # decay epsilon
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+        if np.random.rand() <= self.epsilon:
+            return np.random.randint(low=0, high=self.action_size)
+        act_values = self.model.predict(state)[0]
         return np.argmax(act_values)  # returns the index of the greedy action
 
-    def replay(self, batch_size, agent2):  # todo learn to fit in bigger batches to reduce redundant computations
+    def replay(self, batch_size):  # todo learn to fit in bigger batches to reduce redundant computations
         minibatch = random.sample(self.memory, batch_size)
         for state, action, reward, next_state, done in minibatch:
             target = reward
@@ -51,13 +53,15 @@ class DeepQAgent:
                         val = temp_val[a]
                         best_action = a
 
-                target = (reward + self.gamma * agent2.model.predict(next_state)[0][best_action])  # Double Q learning
+                target = (reward + self.gamma * self.target_model.predict(next_state)[0][best_action])  # Double Q learning
             target_f = self.model.predict(state)
             target_f[0][action] = target
             self.model.fit(state, target_f, epochs=1, verbose=0)
 
     def load(self, name):
         self.model.load_weights(name)
+        self.target_model.load_weights(name + "target")
 
     def save(self, name):
         self.model.save_weights(name)
+        self.target_model.save_weights(name + "target")
