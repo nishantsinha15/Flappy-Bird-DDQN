@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 def plot(data, data2):
     plt.plot(data, 'r', data2, 'g')
-    plt.savefig('Chart.png')
+    plt.savefig('Chart_test.png')
 
 def train(FRAME_TRAIN=1000005):
     game = FlappyBird(pipe_gap = 250)
@@ -20,6 +20,7 @@ def train(FRAME_TRAIN=1000005):
     total_reward = 0
     survival = 0
     agent = DDQN_Agent.DeepQAgent()
+    agent.load('model')
     batch_size = 32
     my_timer = time.time()
     prev_frame = 0
@@ -53,19 +54,19 @@ def train(FRAME_TRAIN=1000005):
         next_state = np.reshape(next_state, [1, 8])
         survival += reward
         # remember and replay
-        agent.remember(state, action, reward, next_state, p.game_over())
-        if len(agent.memory) > batch_size:
-            agent.replay(batch_size)
+        # agent.remember(state, action, reward, next_state, p.game_over())
+        # if len(agent.memory) > batch_size:
+        #     agent.replay(batch_size)
 
         state = next_state
 
-        # save Model
-        if i % 5000 == 0:
-            print("Updating weights")
-            agent.save('model')
-            agent.target_model.set_weights(agent.model.get_weights())
+        # # save Model
+        # if i % 5000 == 0:
+        #     print("Updating weights")
+        #     agent.save('model')
+        #     agent.target_model.set_weights(agent.model.get_weights())
 
-        if i % 1000 == 0:
+        if i % 500 == 0:
             plot(data, data2)
 
 if __name__ == '__main__':

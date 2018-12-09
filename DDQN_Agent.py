@@ -36,7 +36,10 @@ class DeepQAgent:
             self.epsilon *= self.epsilon_decay
 
         if np.random.rand() <= self.epsilon:
-            return np.random.randint(low=0, high=self.action_size)
+            if np.random.rand() <= 0.10:
+                return 0
+            else:
+                return 1
         act_values = self.model.predict(state)[0]
         return np.argmax(act_values)  # returns the index of the greedy action
 
