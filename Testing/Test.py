@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 def plot(data):
     plt.plot(data, 'r')
-    plt.savefig('Chart.png')
+    plt.savefig('Testing90K.png')
 
 
 def train(FRAME_TRAIN=1000005):
@@ -21,6 +21,7 @@ def train(FRAME_TRAIN=1000005):
     state = np.reshape(np.asarray(list(state.values())) , [1, 8])
     total_reward = 0
     agent = DDQN_Agent.DeepQAgent()
+    agent.load("model90000")
     batch_size = 32
     my_timer = time.time()
     prev_frame = 0
@@ -49,19 +50,8 @@ def train(FRAME_TRAIN=1000005):
         next_state = np.asarray(list(game.getGameState().values()))
         next_state = np.reshape(next_state, [1, 8])
 
-        # remember and replay
-        agent.remember(state, action, reward, next_state, p.game_over())
-        if len(agent.memory) > batch_size:
-            agent.replay(batch_size)
-
         state = next_state
-
-        # save Model
-        if i % 5000 == 0:
-            print("Updating weights")
-            agent.save('model' + str(i))
-            agent.target_model.set_weights(agent.model.get_weights())
-
+        # time.sleep(0.3)
         # Plot socre
         if i % 1000 == 0:
             plot(data)

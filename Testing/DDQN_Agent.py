@@ -14,7 +14,7 @@ class DeepQAgent:
         self.action_size = action_size
         self.memory = deque(maxlen=replay_len)
         self.gamma = 0.995
-        self.epsilon = 1.0
+        self.epsilon = 0.0001
         self.epsilon_min = 0.01
         self.epsilon_decay = 10 ** ((-1) * (10 ** (-5) ))
         self.learning_rate = 0.0001
