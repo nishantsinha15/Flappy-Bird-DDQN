@@ -1,1 +1,0 @@
-Tried adding a +0.25 reward on surviving every timestep.
